@@ -27,7 +27,7 @@ class Header extends Component {
                     </button>
                     <div id="venue_profile">
                         <div className="profile_image" />
-                        <div className="profile_name">{this.props.user.name}</div>
+                        <div className="profile_name">{this.props.user && this.props.user.name}</div>
                     </div>
                     <a className="button-logout" href="/logout" onClick={this.logout}>
                         <svg xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" width={30} height={30} viewBox="0 0 30 30">

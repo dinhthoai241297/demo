@@ -1,8 +1,8 @@
-var gulp = require('gulp');
-var uglify = require('gulp-uglify');
-var concat = require('gulp-concat');
-var rename = require('gulp-rename');
-var minifyCSS = require('gulp-minify-css');
+let gulp = require('gulp');
+let uglify = require('gulp-uglify');
+let concat = require('gulp-concat');
+let rename = require('gulp-rename');
+let cleanCSS = require('gulp-clean-css');
 
 // Concatenate & Minify JS
 gulp.task('scripts', function () {
@@ -24,11 +24,11 @@ gulp.task('copy-images', function () {
 
 gulp.task('css', function () {
     return gulp.src('styles/**/*.css')
-        .pipe(minifyCSS())
+        .pipe(cleanCSS({ compatibility: 'ie8' }))
         //.pipe(autoprefixer('last 2 version', 'safari 5', 'ie 8', 'ie 9'))
         //.pipe(concat('all.min.css'))
         .pipe(gulp.dest('dist/styles/'))
 });
 
 // Default Task
-gulp.task('default', ['copy-fonts', 'copy-images', 'scripts', 'css']);
+gulp.task('default', gulp.parallel('copy-fonts', 'copy-images', 'scripts', 'css'));

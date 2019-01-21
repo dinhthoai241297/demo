@@ -1,10 +1,13 @@
 import React, { Component } from 'react';
 import Footer from '../common/Footer';
 import { Link } from 'react-router-dom';
-import md5 from 'md5';
 import { toast } from 'react-toastify';
 import { connect } from 'react-redux';
 import * as actions from '../../actions/UserActions';
+import HeaderOut from '../common/HeaderOut';
+import BoxForm from '../common/BoxForm';
+import { Redirect } from 'react-router-dom';
+import CryptoJS from 'crypto-js';
 
 class Login extends Component {
 
@@ -15,18 +18,6 @@ class Login extends Component {
             password: '',
             mesEmail: '',
             mesPass: ''
-        }
-    }
-
-    componentDidMount() {
-        if (this.props.user !== '') {
-            this.props.history.push('/update');
-        }
-    }
-
-    componentWillReceiveProps(nextProps) {
-        if (nextProps.user !== '') {
-            this.props.history.push('/update');
         }
     }
 
@@ -55,6 +46,10 @@ class Login extends Component {
             this.setState({ mesPass: 'Mật khẩu không được để trống' });
             return false;
         }
+        if (pass.length < 6) {
+            this.setState({ mesPass: 'Mật khẩu phải có độ dài tói thiểu là 6 kí tự!' });
+            return false;
+        }
         return true;
     }
 
@@ -65,10 +60,9 @@ class Login extends Component {
         if (!check) {
             return;
         }
-        password = md5(password);
+        password = CryptoJS.MD5(password).toString();
         try {
             let rs = await this.props.login(email, password);
-            console.log(rs);
             if (rs.code === 1) {
                 toast.success('Đăng nhập thành công!', {
                     position: toast.POSITION.BOTTOM_RIGHT
@@ -84,6 +78,7 @@ class Login extends Component {
             }
         } catch (error) {
             // error
+            console.log(error);
             toast.error('Có lỗi xảy ra vui lòng thử lại sau!', {
                 position: toast.POSITION.BOTTOM_RIGHT
             });
@@ -93,63 +88,59 @@ class Login extends Component {
 
     render() {
 
+        let { user } = this.props;
+        if (user) {
+            return <Redirect to="/connectInfo" />
+        }
+
         let { email, password, mesEmail, mesPass } = this.state;
 
         return (
             <div className="with-cookie-bar">
                 <div className="body-wrapper">
                     <div className="myob-nosession-content-wrapper">
-                        <div className="myob-nosession-header">
-                            <img id="navbar-logo" src="https://redux.js.org/img/redux-logo-landscape.png" />
-                        </div>
-                        <div className="login-wrapper">
-                            <div className="box">
-                                <div className="content-wrap">
-                                    <div className="myob-login-header">
-                                        <img className="login-logo" src="https://redux.js.org/img/redux-logo-landscape.png" />
+                        <HeaderOut />
+                        <BoxForm title="Đăng nhập">
+                            <form id="login_form" method="post" role="form">
+                                <div className="row form-holder">
+                                    <div className={'form-group md-col-12' + (mesEmail === '' ? '' : ' has-error')}>
+                                        <input
+                                            autoFocus={true} className="form-control"
+                                            id="id_email" name="email" placeholder="E-mail"
+                                            type="email" value={email} onChange={this.handleInputChange}
+                                            onClick={() => this.setState({ mesEmail: '' })}
+                                        />
+                                        <span className="help-block">{mesEmail}</span>
                                     </div>
-                                    <form id="login_form" method="post" role="form">
-                                        <div className="row form-holder">
-                                            <div className={'form-group md-col-12' + (mesEmail === '' ? '' : ' has-error')}>
-                                                <input
-                                                    autoFocus={true} className="form-control"
-                                                    id="id_email" name="email" placeholder="E-mail"
-                                                    type="email" value={email} onChange={this.handleInputChange}
-                                                    onClick={() => this.setState({ mesEmail: '' })}
-                                                />
-                                                <span className="help-block">{mesEmail}</span>
-                                            </div>
-                                        </div>
-                                        <div className="row form-holder">
-                                            <div className={'form-group md-col-12' + (mesPass === '' ? '' : ' has-error')}>
-                                                <input
-                                                    className="form-control" id="id_password"
-                                                    name="password" placeholder="Mật khẩu" type="password"
-                                                    value={password} onChange={this.handleInputChange}
-                                                    onClick={() => this.setState({ mesPass: '' })}
-                                                />
-                                                <span className="help-block">{mesPass}</span>
-                                            </div>
-                                        </div>
-                                        <div className="row form-holder">
+                                </div>
+                                <div className="row form-holder">
+                                    <div className={'form-group md-col-12' + (mesPass === '' ? '' : ' has-error')}>
+                                        <input
+                                            className="form-control" id="id_password"
+                                            name="password" placeholder="Mật khẩu" type="password"
+                                            value={password} onChange={this.handleInputChange}
+                                            onClick={() => this.setState({ mesPass: '' })}
+                                        />
+                                        <span className="help-block">{mesPass}</span>
+                                    </div>
+                                </div>
+                                {/* <div className="row form-holder">
                                             <div className="form-group remember">
                                                 <label htmlFor="id_keep_logged_in" className="control-label">
                                                     <input id="id_keep_logged_in" name="keep_logged_in" type="checkbox" />
                                                     Lưu đăng nhập
                                                 </label>
                                             </div>
-                                        </div>
-                                        <button className="btn btn-primary btn-width-100" onClick={this.login}>
-                                            Đăng nhập
+                                        </div> */}
+                                <button className="btn btn-primary btn-width-100" onClick={this.login}>
+                                    Đăng nhập
                                         </button>
-                                    </form>
-                                    <a className="restore-password-link" href="/forgotPassword">Quên mật khẩu?</a>
-                                </div>
-                                <hr />
-                                <div className="extra-info">Bạn chưa có tài khoản?</div>
-                                <Link to='/register' >Đăng ký</Link>
-                            </div>
-                        </div>
+                            </form>
+                            <a className="restore-password-link" href="/forgotPassword">Quên mật khẩu?</a>
+                            <hr />
+                            <div className="extra-info">Bạn chưa có tài khoản?</div>
+                            <Link to='/register' >Đăng ký</Link>
+                        </BoxForm>
                     </div>
                 </div>
                 <Footer />

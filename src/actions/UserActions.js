@@ -4,21 +4,26 @@ import urlRequestApi from '../services/urlRequestApi';
 import * as func from '../utils/Utils';
 
 export const loginApi = (email, password) => {
-    return dispatch => httpRequest.postForm(urlRequestApi.user.login, { email, password }).then(res => {
-        let rs = func.aesDecrypt(res.text);
-        let session = func.aesEncrypt({
-            token: rs.token,
-            user: rs.user
-        }).toString();
-        localStorage.setItem('session', session);
-        if (rs.code === 1) {
-            dispatch(loginState(rs));
-        }
-        return rs;
-    }).catch(error => {
-        // error
-        console.log(error);
-    });
+    return dispatch => {
+        dispatch({ type: types.LOADING, loading: true });
+        return httpRequest.postForm(urlRequestApi.user.login, { email, password }).then(res => {
+            let rs = func.aesDecrypt(res.text);
+            dispatch({ type: types.LOADING, loading: false });
+            let session = func.aesEncrypt({
+                token: rs.token,
+                user: rs.user
+            }).toString();
+            localStorage.setItem('session', session);
+            if (rs.code === 1) {
+                dispatch(loginState(rs));
+            }
+            return rs;
+        }).catch(error => {
+            // error
+            console.log(error);
+            dispatch({ type: types.LOADING, loading: false });
+        });
+    }
 }
 
 export const loginState = data => {
@@ -28,24 +33,28 @@ export const loginState = data => {
     }
 }
 
-export const updateApi = (name, password, city, nation, session) => {
-    return (dispatch, getState) => httpRequest.postForm(urlRequestApi.user.update, { name, password, city, nation, session }).then(res => {
-        let rs = func.aesDecrypt(res.text);
-        if (rs.code === 1) {
-            let user = { name, password, city, nation };
-            let session = func.aesEncrypt({
-                token: getState().UserReducer.token,
-                user
-            }).toString();
-            localStorage.setItem('session', session);
-            dispatch(updateState(user));
-        }
-        console.log(rs);
-        return rs;
-    }).catch(error => {
-        // error
-        console.log(error);
-    });
+export const updateApi = (name, password, city, nation, session, newPassword) => {
+    return (dispatch, getState) => {
+        dispatch({ type: types.LOADING, loading: true });
+        return httpRequest.postForm(urlRequestApi.user.update, { name, password, city, nation, session, newPassword }).then(res => {
+            let rs = func.aesDecrypt(res.text);
+            dispatch({ type: types.LOADING, loading: false });
+            if (rs.code === 1) {
+                let user = { name, password, city, nation };
+                let session = func.aesEncrypt({
+                    token: getState().UserReducer.token,
+                    user
+                }).toString();
+                localStorage.setItem('session', session);
+                dispatch(updateState(user));
+            }
+            return rs;
+        }).catch(error => {
+            // error
+            console.log(error);
+            dispatch({ type: types.LOADING, loading: false });
+        });
+    }
 }
 
 export const updateState = data => {
@@ -74,3 +83,47 @@ export const logoutState = () => {
     }
 }
 
+export const active = hash => {
+    return dispatch => {
+        dispatch({ type: types.LOADING, loading: true });
+        return httpRequest.postForm(urlRequestApi.user.active, { hash }).then(res => {
+            let rs = func.aesDecrypt(res.text);
+            dispatch({ type: types.LOADING, loading: false });
+            return rs;
+        }).catch(error => {
+            console.log(error);
+            dispatch({ type: types.LOADING, loading: false });
+        });
+    }
+}
+
+export const register = (name, email, nation, city, password) => {
+    return dispatch => {
+        dispatch({ type: types.LOADING, loading: true });
+        return httpRequest.postForm(urlRequestApi.user.register, { name, email, nation, city, password }).then(res => {
+            let rs = func.aesDecrypt(res.text);
+            dispatch({ type: types.LOADING, loading: false });
+            return rs;
+        }).catch(error => {
+            console.log(error);
+            dispatch({ type: types.LOADING, loading: false });
+        });
+    }
+}
+
+export const loadInfoUser = session => {
+    return dispatch => {
+        dispatch({ type: types.LOADING, loading: true });
+        return httpRequest.postForm(urlRequestApi.user.info, { session }).then(res => {
+            let rs = func.aesDecrypt(res.text);
+            dispatch({ type: types.LOADING, loading: false });
+            if (rs.code === 1) {
+                dispatch(updateState(rs.user));
+            }
+            return rs;
+        }).catch(error => {
+            console.log(error);
+            dispatch({ type: types.LOADING, loading: false });
+        });
+    }
+}

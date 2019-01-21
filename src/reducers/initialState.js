@@ -5,14 +5,15 @@ if (user) {
     user = func.aesDecrypt(user);
 } else {
     user = {
-        user: '',
+        user: null,
         token: ''
     }
 }
 
 export default {
     app: {
-        language: 'vi'
+        language: 'vi',
+        loading: false
     },
     user: user
 };

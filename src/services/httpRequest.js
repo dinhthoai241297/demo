@@ -1,6 +1,7 @@
-import superagent from 'superagent';
+// import superagent from 'superagent';
 import { APPNAME, PLATFORM, HOST } from './Constants';
 import * as func from '../utils/Utils';
+const superagent = require('superagent');
 
 const httpRequest = {
     post: (url, params, token) => {

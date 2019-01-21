@@ -4,13 +4,13 @@ import initialState from './initialState';
 const UserReducer = (state = initialState.user, action) => {
     switch (action.type) {
         case actions.LOGIN: {
-            return { user: action.data.user, token: action.data.token }
+            return { user: action.data.user, token: action.data.token };
         }
         case actions.LOGOUT: {
-            return { user: '', token: '' }
+            return { user: null, token: '' };
         }
         case actions.UPDATE_USER: {
-            return { user: action.data }
+            return { ...state, user: { ...state.user, ...action.data } };
         }
         default: {
             return { ...state };
